@@ -23,7 +23,7 @@ impl Display for LexerError {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     Number(f64),
 
@@ -36,9 +36,10 @@ pub enum Token {
 
     LeftParen,
     RightParen,
+
+    EOF,
 }
 
-//TODO: Add the tokenization of numbers
 pub fn tokenize(input: &str) -> Result<Vec<Token>, LexerError> {
     let mut tokens = Vec::new();
 
@@ -129,6 +130,8 @@ pub fn tokenize(input: &str) -> Result<Vec<Token>, LexerError> {
             _ => return Err(LexerError::UnexpectedCharacter(c)),
         }
     }
+
+    tokens.push(Token::EOF);
     Ok(tokens)
 }
 
@@ -140,7 +143,7 @@ mod tests {
     fn tokenize_addition() {
         let tokens = tokenize("+").unwrap();
 
-        assert_eq!(tokens.len(), 1);
+        assert_eq!(tokens.len(), 2);
         assert!(matches!(tokens[0], Token::Add));
     }
 
@@ -148,7 +151,7 @@ mod tests {
     fn tokenize_subtraction() {
         let tokens = tokenize("-").unwrap();
 
-        assert_eq!(tokens.len(), 1);
+        assert_eq!(tokens.len(), 2);
         assert!(matches!(tokens[0], Token::Subtract));
     }
 
@@ -156,7 +159,7 @@ mod tests {
     fn tokenize_multiplication() {
         let tokens = tokenize("*").unwrap();
 
-        assert_eq!(tokens.len(), 1);
+        assert_eq!(tokens.len(), 2);
         assert!(matches!(tokens[0], Token::Multiply));
     }
 
@@ -164,7 +167,7 @@ mod tests {
     fn tokenize_division() {
         let tokens = tokenize("/").unwrap();
 
-        assert_eq!(tokens.len(), 1);
+        assert_eq!(tokens.len(), 2);
         assert!(matches!(tokens[0], Token::Divide));
     }
 
@@ -172,7 +175,7 @@ mod tests {
     fn tokenize_exponential() {
         let tokens = tokenize("^").unwrap();
 
-        assert_eq!(tokens.len(), 1);
+        assert_eq!(tokens.len(), 2);
         assert!(matches!(tokens[0], Token::Exponential));
     }
 
@@ -180,7 +183,7 @@ mod tests {
     fn tokenize_parentheses() {
         let tokens = tokenize("()").unwrap();
 
-        assert_eq!(tokens.len(), 2);
+        assert_eq!(tokens.len(), 3);
         assert!(matches!(tokens[0], Token::LeftParen));
         assert!(matches!(tokens[1], Token::RightParen));
     }
@@ -189,7 +192,7 @@ mod tests {
     fn tokenize_modulo() {
         let tokens = tokenize("%").unwrap();
 
-        assert_eq!(tokens.len(), 1);
+        assert_eq!(tokens.len(), 2);
         assert!(matches!(tokens[0], Token::Modulo));
     }
 
@@ -197,7 +200,7 @@ mod tests {
     fn tokenize_all_operators() {
         let tokens = tokenize("+ - * / ^ ( ) %").unwrap();
 
-        assert_eq!(tokens.len(), 8);
+        assert_eq!(tokens.len(), 9);
 
         assert!(matches!(tokens[0], Token::Add));
         assert!(matches!(tokens[1], Token::Subtract));
@@ -213,7 +216,7 @@ mod tests {
     fn ignore_spaces() {
         let tokens = tokenize("   +   ").unwrap();
 
-        assert_eq!(tokens.len(), 1);
+        assert_eq!(tokens.len(), 2);
         assert!(matches!(tokens[0], Token::Add));
     }
 
@@ -221,7 +224,7 @@ mod tests {
     fn ignore_tabs() {
         let tokens = tokenize("\t+\t").unwrap();
 
-        assert_eq!(tokens.len(), 1);
+        assert_eq!(tokens.len(), 2);
         assert!(matches!(tokens[0], Token::Add));
     }
 
@@ -229,7 +232,7 @@ mod tests {
     fn ignore_newlines() {
         let tokens = tokenize("\n+\n").unwrap();
 
-        assert_eq!(tokens.len(), 1);
+        assert_eq!(tokens.len(), 2);
         assert!(matches!(tokens[0], Token::Add));
     }
 
@@ -237,7 +240,7 @@ mod tests {
     fn ignore_mixed_whitespace() {
         let tokens = tokenize(" \t\n + \n\t ").unwrap();
 
-        assert_eq!(tokens.len(), 1);
+        assert_eq!(tokens.len(), 2);
         assert!(matches!(tokens[0], Token::Add));
     }
 
@@ -246,7 +249,7 @@ mod tests {
         let tokens = tokenize("1 + 2").unwrap();
 
         // This will fail until numbers are implemented.
-        assert_eq!(tokens.len(), 3);
+        assert_eq!(tokens.len(), 4);
 
         assert!(matches!(tokens[0], Token::Number(1.0)));
         assert!(matches!(tokens[1], Token::Add));
@@ -257,7 +260,7 @@ mod tests {
     fn tokenize_complex_expression() {
         let tokens = tokenize("(1 + 2) * 3").unwrap();
 
-        assert_eq!(tokens.len(), 7);
+        assert_eq!(tokens.len(), 8);
 
         assert!(matches!(tokens[0], Token::LeftParen));
         assert!(matches!(tokens[1], Token::Number(1.0)));
@@ -272,7 +275,7 @@ mod tests {
     fn tokenize_integer() {
         let tokens = tokenize("123").unwrap();
 
-        assert_eq!(tokens.len(), 1);
+        assert_eq!(tokens.len(), 2);
         assert!(matches!(tokens[0], Token::Number(123.0)));
     }
 
@@ -280,7 +283,7 @@ mod tests {
     fn tokenize_zero() {
         let tokens = tokenize("0").unwrap();
 
-        assert_eq!(tokens.len(), 1);
+        assert_eq!(tokens.len(), 2);
         assert!(matches!(tokens[0], Token::Number(0.0)));
     }
 
@@ -288,7 +291,7 @@ mod tests {
     fn tokenize_decimal() {
         let tokens = tokenize("123.45").unwrap();
 
-        assert_eq!(tokens.len(), 1);
+        assert_eq!(tokens.len(), 2);
         assert!(matches!(tokens[0], Token::Number(123.45)));
     }
 
@@ -296,7 +299,7 @@ mod tests {
     fn tokenize_multiple_numbers() {
         let tokens = tokenize("123 456 789").unwrap();
 
-        assert_eq!(tokens.len(), 3);
+        assert_eq!(tokens.len(), 4);
 
         assert!(matches!(tokens[0], Token::Number(123.0)));
         assert!(matches!(tokens[1], Token::Number(456.0)));
@@ -307,7 +310,7 @@ mod tests {
     fn tokenize_decimal_expression() {
         let tokens = tokenize("10.5 + 2.75").unwrap();
 
-        assert_eq!(tokens.len(), 3);
+        assert_eq!(tokens.len(), 4);
 
         assert!(matches!(tokens[0], Token::Number(10.5)));
         assert!(matches!(tokens[1], Token::Add));
@@ -346,21 +349,21 @@ mod tests {
     fn tokenize_empty_input() {
         let tokens = tokenize("").unwrap();
 
-        assert!(tokens.is_empty());
+        assert_eq!(tokens.len(), 1); //EOF Token
     }
 
     #[test]
     fn tokenize_only_whitespace() {
         let tokens = tokenize("   \t\n  ").unwrap();
 
-        assert!(tokens.is_empty());
+        assert_eq!(tokens.len(), 1); //EOF Token
     }
 
     #[test]
     fn tokenize_consecutive_operators() {
         let tokens = tokenize("+-*/^").unwrap();
 
-        assert_eq!(tokens.len(), 5);
+        assert_eq!(tokens.len(), 6);
 
         assert!(matches!(tokens[0], Token::Add));
         assert!(matches!(tokens[1], Token::Subtract));
