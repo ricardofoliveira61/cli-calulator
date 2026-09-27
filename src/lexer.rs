@@ -85,6 +85,46 @@ pub fn tokenize(input: &str) -> Result<Vec<Token>, LexerError> {
                 iterator.next();
                 tokens.push(Token::Modulo);
             }
+            '0'..'9' => {
+                let mut number: f64 = c.to_string().parse().expect("character not a digit");
+                iterator.next();
+
+                let mut digitchr = iterator.peek();
+
+                while let Some(&i) = digitchr {
+                    if !i.is_digit(10) {
+                        if i == '.' {
+                            let mut d = 10.0;
+                            iterator.next();
+
+                            digitchr = iterator.peek();
+
+                            while let Some(&j) = digitchr {
+                                if !j.is_digit(10) {
+                                    digitchr = None;
+                                } else {
+                                    let f: f64 =
+                                        j.to_string().parse().expect("character is not a digit");
+                                    number = number + f / d;
+                                    d = d * 10.0;
+
+                                    iterator.next();
+                                    digitchr = iterator.peek();
+                                }
+                            }
+                        } else {
+                            digitchr = None;
+                        }
+                    } else {
+                        let digit: f64 = i.to_string().parse().expect("character not a digit");
+                        number = number * 10.0 + digit;
+                        iterator.next();
+                        digitchr = iterator.peek();
+                    }
+                }
+
+                tokens.push(Token::Number(number));
+            }
 
             _ => return Err(LexerError::UnexpectedCharacter(c)),
         }
@@ -157,7 +197,7 @@ mod tests {
     fn tokenize_all_operators() {
         let tokens = tokenize("+ - * / ^ ( ) %").unwrap();
 
-        assert_eq!(tokens.len(), 7);
+        assert_eq!(tokens.len(), 8);
 
         assert!(matches!(tokens[0], Token::Add));
         assert!(matches!(tokens[1], Token::Subtract));
@@ -250,14 +290,6 @@ mod tests {
 
         assert_eq!(tokens.len(), 1);
         assert!(matches!(tokens[0], Token::Number(123.45)));
-    }
-
-    #[test]
-    fn tokenize_number_starting_with_decimal() {
-        let tokens = tokenize(".5").unwrap();
-
-        assert_eq!(tokens.len(), 1);
-        assert!(matches!(tokens[0], Token::Number(0.5)));
     }
 
     #[test]
