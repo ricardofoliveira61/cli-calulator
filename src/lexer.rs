@@ -31,7 +31,7 @@ pub enum Token {
     Subtract,
     Multiply,
     Divide,
-    Exponential,
+    Power,
     Modulo,
 
     LeftParen,
@@ -72,7 +72,7 @@ pub fn tokenize(input: &str) -> Result<Vec<Token>, LexerError> {
             }
             '^' => {
                 iterator.next();
-                tokens.push(Token::Exponential);
+                tokens.push(Token::Power);
             }
             '(' => {
                 iterator.next();
@@ -176,7 +176,7 @@ mod tests {
         let tokens = tokenize("^").unwrap();
 
         assert_eq!(tokens.len(), 2);
-        assert!(matches!(tokens[0], Token::Exponential));
+        assert!(matches!(tokens[0], Token::Power));
     }
 
     #[test]
@@ -206,7 +206,7 @@ mod tests {
         assert!(matches!(tokens[1], Token::Subtract));
         assert!(matches!(tokens[2], Token::Multiply));
         assert!(matches!(tokens[3], Token::Divide));
-        assert!(matches!(tokens[4], Token::Exponential));
+        assert!(matches!(tokens[4], Token::Power));
         assert!(matches!(tokens[5], Token::LeftParen));
         assert!(matches!(tokens[6], Token::RightParen));
         assert!(matches!(tokens[7], Token::Modulo));
@@ -369,6 +369,6 @@ mod tests {
         assert!(matches!(tokens[1], Token::Subtract));
         assert!(matches!(tokens[2], Token::Multiply));
         assert!(matches!(tokens[3], Token::Divide));
-        assert!(matches!(tokens[4], Token::Exponential));
+        assert!(matches!(tokens[4], Token::Power));
     }
 }
