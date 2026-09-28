@@ -1,7 +1,7 @@
 use super::lexer::Token;
 
 #[derive(Debug, Clone, PartialEq)]
-enum Operator {
+pub enum Operator {
     Add,
     Subtract,
     Multiply,
@@ -11,7 +11,7 @@ enum Operator {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-enum Expr {
+pub enum Expr {
     Number(f64),
     Unary {
         operator: Operator,
@@ -151,7 +151,7 @@ impl Parser {
     fn power(&mut self) -> Expr {
         let left = self.primary();
 
-        if *self.peek() == Token::Exponential {
+        if *self.peek() == Token::Power {
             self.advance();
 
             let right = self.power();
@@ -304,7 +304,7 @@ mod tests {
     fn parses_exponentiation() {
         let ast = parse(vec![
             Token::Number(2.0),
-            Token::Exponential,
+            Token::Power,
             Token::Number(3.0),
             Token::EOF,
         ]);
@@ -396,9 +396,9 @@ mod tests {
     fn exponentiation_is_right_associative() {
         let ast = parse(vec![
             Token::Number(2.0),
-            Token::Exponential,
+            Token::Power,
             Token::Number(3.0),
-            Token::Exponential,
+            Token::Power,
             Token::Number(4.0),
             Token::EOF,
         ]);
@@ -445,7 +445,7 @@ mod tests {
         let ast = parse(vec![
             Token::Subtract,
             Token::Number(2.0),
-            Token::Exponential,
+            Token::Power,
             Token::Number(3.0),
             Token::EOF,
         ]);
