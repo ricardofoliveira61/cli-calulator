@@ -25,13 +25,13 @@ pub enum Expr {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-struct Parser {
+pub struct Parser {
     tokens: Vec<Token>,
     current: usize,
 }
 
 impl Parser {
-    fn new(tokens: Vec<Token>) -> Self {
+    pub fn new(tokens: Vec<Token>) -> Self {
         Self {
             tokens: tokens,
             current: 0,
@@ -66,7 +66,7 @@ impl Parser {
         }
     }
 
-    fn parse(&mut self) -> Expr {
+    pub fn parse(&mut self) -> Expr {
         return self.expression();
     }
 
