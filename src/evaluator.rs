@@ -1,6 +1,6 @@
 use super::parser::{Expr, Operator};
 
-fn evaluate(expression: &Expr) -> f64 {
+pub fn evaluate(expression: &Expr) -> f64 {
     match expression {
         Expr::Number(value) => *value,
 
@@ -28,7 +28,6 @@ fn evaluate(expression: &Expr) -> f64 {
                 Operator::Divide => left / right,
                 Operator::Power => left.powf(right),
                 Operator::Modulo => left % right,
-                _ => panic!("Invalid Operation"),
             }
         }
     }
